@@ -11,7 +11,7 @@ function Invoke-Steps($createScript) {
 	$script:steps = @{}
 	$script:createScript = $createScript
 
-	. $createScript
+	. $createScript -scriptDirectory $(Split-Path $script:MyInvocation.MyCommand.Path)
 
 	if($script:stepNumber -eq $null) {
 		$script:stepNumber = 1
