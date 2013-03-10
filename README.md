@@ -7,6 +7,11 @@ Execution:
 cmd powershell Set-ExecutionPolicy RemoteSigned;. C:\Steps.ps1;Invoke-Steps C:\CreateImage.ps1
 ```
 
+Start from specific step:
+```powershell
+cmd powershell Set-ExecutionPolicy RemoteSigned;. C:\Steps.ps1 3;Invoke-Steps C:\CreateImage.ps1
+```
+
 Example:
 ```powershell
 ConfigureSteps "Administrator" "pass@word1"
