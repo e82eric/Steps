@@ -1,10 +1,16 @@
+param($fqdn, $password)
+
+$_fqdn = $fqdn
+$_password = $password
+
 function CreateADUser($name) {
-	$domain = New-Object System.DirectoryServices.DirectoryEntry("LDAP://CN=Users,DC=$script:computerName,DC=net")
-	$user = $domain.Children.Add("CN=$name", "user")
+	$domain = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$_fqdn")
+	$users = $domain.Children | ? { $_.cn -eq "users" }
+	$user = $users.Children.Add("CN=$name", "user")
 	$user.Properties["samAccountName"].Value = $name
 	$user.CommitChanges() | Out-Null
 
-	$user.Invoke("SetPassword", "$script:password") | Out-Null
+	$user.Invoke("SetPassword", "$_password") | Out-Null
 	$user.CommitChanges() | Out-Null
 
 	$uac = $user.Properties["userAccountControl"].Value
@@ -17,7 +23,8 @@ function CreateADUser($name) {
 
 	$user.CommitChanges() | Out-Null
 
-	$psUser = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "$script:netBiosName\$name",$script:secureStringPassword
+	$secureStringPassword = ConvertTo-SecureString "$_password" -AsPlainText -Force
+	$psUser = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "$_fqdn\$name",$secureStringPassword
 
 	$psUser
 }
