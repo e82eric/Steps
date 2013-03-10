@@ -6,12 +6,13 @@ $script:createScript = $null
 $script:scriptPath = $MyInvocation.MyCommand.path
 $script:stepNumber = $stepNumber
 $script:winLogonPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\winlogon'
+$script:scriptDirectory = $(Split-Path $script:MyInvocation.MyCommand.Path)
 
 function Invoke-Steps($createScript) {
 	$script:steps = @{}
 	$script:createScript = $createScript
 
-	. $createScript -scriptDirectory $(Split-Path $script:MyInvocation.MyCommand.Path)
+	. $createScript -scriptDirectory $script:scriptDirectory
 
 	if($script:stepNumber -eq $null) {
 		$script:stepNumber = 1
@@ -37,10 +38,17 @@ function Step ($stepNumber, $action) {
 
 function ClearRestartRegistrySettings() {
 	Set-ItemProperty -Path $script:winLogonPath -Name AutoAdminLogon -Value 0
-	Remove-ItemProperty $script:winLogonPath -Name DefaultUserName
-	Remove-ItemProperty $script:winLogonPath -Name DefaultPassword
-	Remove-ItemProperty $script:winLogonPath -Name ForceAutoLogon
-	Remove-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name temp_run
+	
+	_DeleteRegistryEntry $script:winLogonPath DefaultUserName
+	_DeleteRegistryEntry $script:winLogonPath DefaultPassword
+	_DeleteRegistryEntry $script:winLogonPath ForceAutoLogon
+	_DeleteRegistryEntry "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "temp_run"
+}
+
+function _DeleteRegistryEntry ($path, $name) {
+	if(Test-Path "$path\$name") {
+		Remove-ItemProperty $script:winLogonPath -Name DefaultUserName
+	}
 }
 
 function RestartAndRun() {
