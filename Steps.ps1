@@ -24,6 +24,8 @@ function Invoke-Steps($createScript) {
 		& $script:steps.get_item($script:stepNumber)
 		$script:stepNumber ++
 		RestartAndRun
+	} else {
+		ClearRestartRegistrySettings
 	}
 }
 
@@ -46,8 +48,9 @@ function ClearRestartRegistrySettings() {
 }
 
 function _DeleteRegistryEntry ($path, $name) {
-	if(Test-Path "$path\$name") {
-		Remove-ItemProperty $script:winLogonPath -Name DefaultUserName
+	$exists = Get-ItemProperty $path $name -ErrorAction SilentlyContinue
+	if($exists -ne $null) {
+		Remove-ItemProperty $path -Name $name
 	}
 }
 
